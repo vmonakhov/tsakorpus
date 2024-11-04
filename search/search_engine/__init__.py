@@ -1,8 +1,15 @@
 if __name__ == '__main__':
     import json
     import time
+    import argparse
     from client import SearchClient
-    sc = SearchClient('../conf')
+
+    parser = argparse.ArgumentParser(description='Search engine')
+    parser.add_argument('--corpus-root', type=str, default='../../',
+                        help='corpus root path with "conf" and "corpus" subfolders')
+    args = parser.parse_args()
+
+    sc = SearchClient(os.path.join(args.corpus_root, 'conf'))
 
     # 1. Lexical query.
     query1 = {'ana.lex': 'vbcvqr'}

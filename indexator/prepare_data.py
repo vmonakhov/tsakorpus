@@ -8,16 +8,17 @@ class PrepareData:
     Contains functions called when preparing the data
     for indexing in the database.
     """
-    SETTINGS_DIR = '../conf'
     rxBadField = re.compile('[^a-zA-Z0-9_]|^(?:lex|gr|gloss_index|wf|[wm]type|ana|sent_ids|id)$')
     MULTIPLE_SHARDS_THRESHOLD = 256 * 1024 * 1024
 
-    def __init__(self):
+    def __init__(self, corpus_root):
         """
         Load corpus-specific settings from conf/corpus.json. Create
         analyzer patterns used by Elasticsearch to tokenize text.
         """
-        f = open(os.path.join(self.SETTINGS_DIR, 'corpus.json'),
+        self.settings_dir = os.path.join(corpus_root, 'conf')
+
+        f = open(os.path.join(self.settings_dir, 'corpus.json'),
                  'r', encoding='utf-8')
         self.settings = json.loads(f.read())
         f.close()
@@ -27,7 +28,7 @@ class PrepareData:
         self.kwFields = []
         if 'kw_word_fields' in self.settings:
             self.kwFields = self.settings['kw_word_fields']
-        f = open(os.path.join(self.SETTINGS_DIR, 'categories.json'),
+        f = open(os.path.join(self.settings_dir, 'categories.json'),
                  'r', encoding='utf-8')
         self.categories = json.loads(f.read())
         f.close()

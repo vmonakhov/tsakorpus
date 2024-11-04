@@ -22,21 +22,23 @@ class Indexator:
     Contains methods for loading the JSON documents in the corpus
     database.
     """
-    SETTINGS_DIR = '../conf'
     rxBadFileName = re.compile('[^\\w_.-]*', flags=re.DOTALL)
 
-    def __init__(self, overwrite=False):
+    def __init__(self, overwrite=False, corpus_root='../'):
+
+        self.settings_dir = os.path.join(corpus_root, 'conf')
+
         self.overwrite = overwrite  # whether to overwrite an existing index without asking
-        with open(os.path.join(self.SETTINGS_DIR, 'corpus.json'),
+        with open(os.path.join(self.settings_dir, 'corpus.json'),
                   'r', encoding='utf-8') as fSettings:
             self.settings = json.load(fSettings)
-        self.j2h = JSON2HTML(settings=self.settings)
+        self.j2h = JSON2HTML(settings=self.settings, corpus_root=corpus_root)
         self.name = self.settings['corpus_name']
         self.languages = self.settings['languages']
         if len(self.languages) <= 0:
             self.languages = [self.name]
         self.input_format = self.settings['input_format']
-        self.corpus_dir = os.path.join('../corpus', self.name)
+        self.corpus_dir = os.path.join(corpus_root, 'corpus', self.name)
         self.lowerWf = False
         if 'wf_lowercase' not in self.settings or self.settings['wf_lowercase']:
             self.lowerWf = True
@@ -66,7 +68,7 @@ class Indexator:
             self.additionalWordFields -= set(self.settings['accidental_word_fields'])
         if 'exclude_from_dict' in self.settings:
             self.excludeFromDict = {k: re.compile(v) for k, v in self.settings['exclude_from_dict'].items()}
-        f = open(os.path.join(self.SETTINGS_DIR, 'categories.json'),
+        f = open(os.path.join(self.settings_dir, 'categories.json'),
                  'r', encoding='utf-8')
         categories = json.loads(f.read())
         f.close()
@@ -75,7 +77,7 @@ class Indexator:
         self.goodWordFields = set(self.goodWordFields)
         self.characterRegexes = {}
 
-        self.pd = PrepareData()
+        self.pd = PrepareData(corpus_root)
 
         # Initialize Elasticsearch connection
         self.es = None
@@ -922,9 +924,10 @@ class Indexator:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Index corpus in Elasticsearch 7.x.')
     parser.add_argument('-y', help='overwrite existing database without asking first')
+    parser.add_argument('--corpus-root', type=str, default='../', help='corpus root path with "conf" and "corpus" subfolders')
     args = parser.parse_args()
     overwrite = False
     if args.y is not None:
         overwrite = True
-    x = Indexator(overwrite)
+    x = Indexator(overwrite, args.corpus_root)
     x.load_corpus()

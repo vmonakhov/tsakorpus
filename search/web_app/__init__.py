@@ -24,7 +24,7 @@ def load_csv_translations(fname, pfx=''):
     return translations
 
 
-def generate_po(lang):
+def generate_po(lang, corpTransPath):
     """
     Generate a messages.po translation file for pybabel based on
     the contents of translations/lang
@@ -42,7 +42,10 @@ def generate_po(lang):
             with open(os.path.join(srcDir, 'main.txt'), 'r', encoding='utf-8') as fIn:
                 fOut.write(fIn.read() + '\n\n')
             dictMessages = {}
-            dictMessages.update(load_csv_translations(os.path.join(srcDir, 'corpus-specific.txt'), ''))
+
+            dictMessages.update(load_csv_translations(
+                os.path.join(corpTransPath, lang, 'corpus-specific.txt'), ''))
+
             dictMessages.update(load_csv_translations(os.path.join(srcDir, 'input_methods.txt'),
                                                       'inputmethod_'))
             dictMessages.update(load_csv_translations(os.path.join(srcDir, 'languages.txt'),
@@ -85,7 +88,14 @@ def compile_translations():
         print('Interface translations compiled.')
 
 
-SETTINGS_DIR = '../conf'
+CORPUS_ROOT = os.getenv('CORPUS_ROOT')
+if CORPUS_ROOT is not None:
+    SETTINGS_DIR = os.path.join(CORPUS_ROOT, 'conf')
+    CORPUS_TRANS = os.path.join(CORPUS_ROOT, 'translations')
+else:
+    SETTINGS_DIR = '../conf'
+    CORPUS_TRANS = 'web_app/translations'
+
 MAX_PAGE_SIZE = 100     # maximum number of sentences per page
 MIN_TOTAL_FREQ_WORD_QUERY = 2000  # minimal number of processed tokens after which
                                   # the word/lemma search involving multiple words
@@ -106,7 +116,7 @@ settings.load_settings(os.path.join(SETTINGS_DIR, 'corpus.json'),
 
 # Prepare pybabel translations
 for lang in settings.interface_languages:
-    generate_po(lang)
+    generate_po(lang, CORPUS_TRANS)
 compile_translations()
 
 # Continue with module imports. Beware that there are other

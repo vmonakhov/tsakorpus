@@ -6,6 +6,10 @@ import json
 import time
 from .query_parsers import InterfaceQueryParser
 
+import sys
+sys.path.append("..")
+from web_app.corpus_settings import CorpusSettings
+
 
 def log_if_needed(f):
     """
@@ -26,8 +30,15 @@ class SearchClient:
     Contains methods for querying the corpus database.
     """
 
-    def __init__(self, settings_dir, settings):
-        self.settings = settings
+    def __init__(self, settings_dir, settings=None):
+
+        if settings is None:
+            self.settings = CorpusSettings()
+            self.settings.load_settings(os.path.join(settings_dir, 'corpus.json'),
+                                        os.path.join(settings_dir, 'categories.json'))
+        else:
+            self.settings = settings
+
         self.name = self.settings.corpus_name
         esTimeout = max(20, self.settings.query_timeout)
         self.es = None

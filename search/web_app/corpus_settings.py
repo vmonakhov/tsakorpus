@@ -555,7 +555,7 @@ class CorpusSettings:
                 if v not in existingTranslations:
                     fOut.write(v + '\t' + v + '\n')
 
-    def prepare_translation(self, dirname, langSrc, langTarget, data):
+    def prepare_translation(self, dirname, langSrc, langTarget, data, corpTransPath):
         """
         Generate corpus-specific translation files for one
         language (langTarget) based on the existing translation
@@ -567,8 +567,11 @@ class CorpusSettings:
                      os.path.join(targetDir, 'header.txt'))
         shutil.copy2(os.path.join(srcDir, 'main.txt'),
                      os.path.join(targetDir, 'main.txt'))
-        shutil.copy2(os.path.join(srcDir, 'corpus-specific.txt'),
-                     os.path.join(targetDir, 'corpus-specific.txt'))
+
+        shutil.copy2(
+            os.path.join(corpTransPath, langSrc, 'corpus-specific.txt'),
+            os.path.join(targetDir, 'corpus-specific.txt'))
+
         inputMethods = load_csv_translations(os.path.join(srcDir, 'input_methods.txt'))
         languages = load_csv_translations(os.path.join(srcDir, 'languages.txt'))
         metaFields = load_csv_translations(os.path.join(srcDir, 'metadata_fields.txt'))
@@ -621,16 +624,16 @@ class CorpusSettings:
         self.write_translation_csv(tooltips, list(newTooltips),
                                    os.path.join(targetDir, 'tooltips.txt'))
 
-    def prepare_translations(self, dirname, data=None):
+    def prepare_translations(self, dirname, data=None, corpTransPath="web_app/translations"):
         """
         Generate corpus-specific translation files based on the
-        data eneterd by the user.
+        data entered by the user.
         """
         dictSettings = self.processed_gui_settings(data)
         for interfaceLang in dictSettings['interface_languages']:
             langSrc = interfaceLang
-            if not os.path.exists(os.path.join('../USER_CONFIG/translations', interfaceLang)):
-                os.makedirs(os.path.join('../USER_CONFIG/translations', interfaceLang))
-            if not os.path.exists(os.path.join('web_app/translations', interfaceLang)):
+            if not os.path.exists(os.path.join(dirname, interfaceLang)):
+                os.makedirs(os.path.join(dirname, interfaceLang))
+            if not os.path.exists(os.path.join(corpTransPath, interfaceLang)):
                 langSrc = 'en'
-            self.prepare_translation(dirname, langSrc, interfaceLang, dictSettings)
+            self.prepare_translation(dirname, langSrc, interfaceLang, dictSettings, corpTransPath)

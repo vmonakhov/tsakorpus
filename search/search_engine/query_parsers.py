@@ -2,7 +2,12 @@ import re
 import os
 import json
 import random
+import argparse
 from .word_relations import WordRelations
+
+import sys
+sys.path.append("..")
+from web_app.corpus_settings import CorpusSettings
 
 
 class InterfaceQueryParser:
@@ -18,11 +23,18 @@ class InterfaceQueryParser:
                      '&': 'must',
                      '|': 'should'}
 
-    def __init__(self, settings_dir, settings, rp=None):
+    def __init__(self, settings_dir, settings=None, rp=None):
+
+        if settings is None:
+            self.settings = CorpusSettings()
+            self.settings.load_settings(os.path.join(settings_dir, 'corpus.json'),
+                                        os.path.join(settings_dir, 'categories.json'))
+        else:
+            self.settings = settings
+
         with open(os.path.join(settings_dir, 'categories.json'),
                   'r', encoding='utf-8-sig') as fIn:
             self.gramDict = json.loads(fIn.read())
-        self.settings = settings
 
         self.rxSimpleText = re.compile('^[^\\[\\]()*\\\\{}^$.?+~|,&]*$')
         self.rxBooleanText = re.compile('^[^\\[\\]()\\\\{}^$.+|]*$')
@@ -1262,6 +1274,11 @@ class InterfaceQueryParser:
 
 
 if __name__ == '__main__':
-    iqp = InterfaceQueryParser('../../conf')
+    parser = argparse.ArgumentParser(description='Query parsing tool')
+    parser.add_argument('--corpus-root', type=str, default='../../',
+                        help='corpus root path with "conf" and "corpus" subfolders')
+    args = parser.parse_args()
+
+    iqp = InterfaceQueryParser(os.path.join(args.corpus_root, 'conf'))
     print(json.dumps(iqp.make_bool_query('(A|B|C*D),~Z', 'asd', 'all')))
     print(json.dumps(iqp.make_bool_query('~(A|(B.*[abc]|C*D))', 'asd', 'all')))

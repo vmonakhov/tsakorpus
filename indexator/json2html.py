@@ -15,12 +15,12 @@ class JSON2HTML:
     Contains methods for translating annotated JSON files into
     HTML files, provided that the corpus settings allow full-text view.
     """
-    SETTINGS_DIR = '../conf'
 
-    def __init__(self, settings):
+    def __init__(self, settings, corpus_root):
+        self.settings_dir = os.path.join(corpus_root, 'conf')
         self.settings = CorpusSettings()
-        self.settings.load_settings(os.path.join(self.SETTINGS_DIR, 'corpus.json'),
-                               os.path.join(self.SETTINGS_DIR, 'categories.json'))
+        self.settings.load_settings(os.path.join(self.settings_dir, 'corpus.json'),
+                               os.path.join(self.settings_dir, 'categories.json'))
         self.sentView = SentenceViewer(self.settings, None, fullText=True)
         self.iterSent = None
         if self.settings.input_format in ['json', 'json-gzip']:
