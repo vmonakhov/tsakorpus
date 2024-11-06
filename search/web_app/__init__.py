@@ -87,8 +87,12 @@ def compile_translations():
     else:
         print('Interface translations compiled.')
 
+try:
+    import mod_wsgi
+    CORPUS_ROOT = f'../data/{mod_wsgi.process_group}'
+except:
+    CORPUS_ROOT = os.getenv('CORPUS_ROOT')
 
-CORPUS_ROOT = os.getenv('CORPUS_ROOT')
 if CORPUS_ROOT is not None:
     SETTINGS_DIR = os.path.join(CORPUS_ROOT, 'conf')
     CORPUS_TRANS = os.path.join(CORPUS_ROOT, 'translations')
