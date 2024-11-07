@@ -38,9 +38,9 @@ def generate_po(lang, corpTransPath):
     with open(os.path.join(targetDir, 'messages.po'), 'w', encoding='utf-8') as fOut:
         try:
             with open(os.path.join(srcDir, 'header.txt'), 'r', encoding='utf-8') as fIn:
-                fOut.write(fIn.read() + '\n')
+                fOut.write(f'{fIn.read()}\n')
             with open(os.path.join(srcDir, 'main.txt'), 'r', encoding='utf-8') as fIn:
-                fOut.write(fIn.read() + '\n\n')
+                fOut.write(f'{fIn.read()}\n\n')
             dictMessages = {}
 
             dictMessages.update(load_csv_translations(
@@ -63,8 +63,9 @@ def generate_po(lang, corpTransPath):
             for k in sorted(dictMessages):
                 fOut.write('msgid "' + k.replace('\n', '\\n').replace('"', '&quot;').replace('%', '%%') + '"\n')
                 fOut.write('msgstr "' + dictMessages[k].replace('\n', '\\n').replace('"', '&quot;').replace('%', '%%') + '"\n\n')
-        except:
+        except Exception as e:
             print('Something went wrong when generating interface translations.')
+            print(str(e))
 
 
 def compile_translations():
@@ -82,8 +83,9 @@ def compile_translations():
         pyBabelPath = os.path.join(pythonPath, 'Scripts', 'pybabel')
     try:
         subprocess.run([pyBabelPath, 'compile',  '-d', 'translations_pybabel'], cwd='web_app', check=True)
-    except:
+    except Exception as e:
         print('Could not compile translations with ' + pyBabelPath + ' .')
+        print(str(e))
     else:
         print('Interface translations compiled.')
 
